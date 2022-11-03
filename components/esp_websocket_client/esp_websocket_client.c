@@ -90,6 +90,7 @@ typedef struct {
     size_t                      client_cert_len;
     const char                  *client_key;
     size_t                      client_key_len;
+    bool                        skip_server_verification;
     bool                        use_global_ca_store;
     bool                        skip_cert_common_name_check;
     esp_err_t                   (*crt_bundle_attach)(void *conf);
@@ -492,7 +493,9 @@ static esp_err_t esp_websocket_client_create_transport(esp_websocket_client_hand
 
         esp_transport_set_default_port(ssl, WEBSOCKET_SSL_DEFAULT_PORT);
         esp_transport_list_add(client->transport_list, ssl, "_ssl"); // need to save to transport list, for cleanup
-        if (client->config->use_global_ca_store == true) {
+        if (client->config->skip_server_verification == true) {
+            esp_transport_ssl_skip_server_verification(ssl);
+        } else if (client->config->use_global_ca_store == true) {
             esp_transport_ssl_enable_global_ca_store(ssl);
         } else if (client->config->cert) {
             if (!client->config->cert_len) {
@@ -591,6 +594,7 @@ esp_websocket_client_handle_t esp_websocket_client_init(const esp_websocket_clie
     }
 
     // configure ssl related parameters
+    client->config->skip_server_verification = config->skip_server_verification;
     client->config->use_global_ca_store = config->use_global_ca_store;
     client->config->cert = config->cert_pem;
     client->config->cert_len = config->cert_len;
