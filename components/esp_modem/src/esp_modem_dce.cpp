@@ -14,6 +14,10 @@
 
 namespace esp_modem {
 
+namespace {
+constexpr const char TAG[] = "MODEM";
+}
+
 namespace transitions {
 
 static bool exit_data(DTE &dte, ModuleIf &device, Netif &netif)
@@ -96,28 +100,34 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
         break;
     case modem_mode::COMMAND_MODE:
         if (mode == modem_mode::COMMAND_MODE || mode >= modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         if (mode == modem_mode::CMUX_MODE) {
             netif.stop();
             netif.wait_until_ppp_exits();
             if (!dte->set_mode(modem_mode::COMMAND_MODE)) {
+                ESP_LOGI(TAG, "return false");
                 return false;
             }
             mode = m;
+            ESP_LOGI(TAG, "return true");
             return true;
         }
         if (!transitions::exit_data(*dte, *device, netif)) {
             mode = modem_mode::UNDEF;
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         mode = m;
         return true;
     case modem_mode::DATA_MODE:
         if (mode == modem_mode::DATA_MODE || mode == modem_mode::CMUX_MODE || mode >= modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         if (!transitions::enter_data(*dte, *device, netif)) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         mode = m;
@@ -125,58 +135,71 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
     case modem_mode::CMUX_MODE:
         ESP_LOGI("TAG", "switching to CMUX_MODE");
         if (mode == modem_mode::DATA_MODE || mode == modem_mode::CMUX_MODE || mode >= modem_mode::CMUX_MANUAL_MODE) {
-            ESP_LOGW("TAG", "nix da 1 %i", std::to_underlying(mode));
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         device->set_mode(modem_mode::CMUX_MODE);    // switch the device into CMUX mode
         usleep(100'000);                            // some devices need a few ms to switch
 
         if (!dte->set_mode(modem_mode::CMUX_MODE)) {
-            ESP_LOGW("TAG", "nix da 2");
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         mode = modem_mode::CMUX_MODE;
+        ESP_LOGI(TAG, "return ???");
         return transitions::enter_data(*dte, *device, netif);
     case modem_mode::CMUX_MANUAL_MODE:
         if (mode != modem_mode::COMMAND_MODE && mode != modem_mode::UNDEF) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         device->set_mode(modem_mode::CMUX_MODE);
         usleep(100'000);
 
         if (!dte->set_mode(m)) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         mode = modem_mode::CMUX_MANUAL_MODE;
+        ESP_LOGI(TAG, "return true");
         return true;
     case modem_mode::CMUX_MANUAL_EXIT:
         if (mode != modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         if (!dte->set_mode(m)) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         mode = modem_mode::COMMAND_MODE;
         return true;
     case modem_mode::CMUX_MANUAL_SWAP:
         if (mode != modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         if (!dte->set_mode(m)) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
+        ESP_LOGI(TAG, "return true");
         return true;
     case modem_mode::CMUX_MANUAL_DATA:
         if (mode != modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
         return transitions::enter_data(*dte, *device, netif);
     case modem_mode::CMUX_MANUAL_COMMAND:
         if (mode != modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGI(TAG, "return false");
             return false;
         }
+        ESP_LOGI(TAG, "return ???");
         return transitions::exit_data(*dte, *device, netif);
     }
+    ESP_LOGI(TAG, "return false");
     return false;
 }
 

@@ -13,6 +13,10 @@
 
 using namespace esp_modem;
 
+namespace {
+constexpr const char TAG[] = "MODEM";
+}
+
 #ifdef CONFIG_ESP_MODEM_CMUX_DEFRAGMENT_PAYLOAD
 /**
  * @brief Define this to defragment partially received data of CMUX payload
@@ -369,6 +373,7 @@ bool CMux::init()
     state = cmux_state::INIT;
     term->set_read_cb([this](uint8_t *data, size_t len) {
         this->on_cmux_data(data, len);
+        ESP_LOGI(TAG, "return false");
         return false;
     });
 
@@ -384,6 +389,7 @@ bool CMux::init()
                 break;
             }
             if (timeout++ > 100) {
+                ESP_LOGI(TAG, "return false");
                 return false;
             }
         }
@@ -391,11 +397,14 @@ bool CMux::init()
             usleep(CONFIG_ESP_MODEM_CMUX_DELAY_AFTER_DLCI_SETUP * 1'000);
         }
     }
+    ESP_LOGI(TAG, "return true");
     return true;
 }
 
 int CMux::write(int virtual_term, uint8_t *data, size_t len)
 {
+    ESP_LOGI(TAG, "data=\"%.*s\"", len, data);
+
     const size_t cmux_max_len = 127;
     Scoped<Lock> l(lock);
     int i = virtual_term + 1;

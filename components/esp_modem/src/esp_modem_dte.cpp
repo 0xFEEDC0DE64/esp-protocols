@@ -14,6 +14,10 @@ using namespace esp_modem;
 
 static const size_t dte_default_buffer_size = 1000;
 
+namespace {
+constexpr const char TAG[] = "MODEM";
+}
+
 DTE::DTE(const esp_modem_dte_config *config, std::unique_ptr<Terminal> terminal):
     buffer(config->dte_buffer_size),
     cmux_term(nullptr), primary_term(std::move(terminal)), secondary_term(primary_term),
@@ -89,16 +93,20 @@ bool DTE::setup_cmux()
 {
     cmux_term = std::make_shared<CMux>(primary_term, std::move(buffer));
     if (cmux_term == nullptr) {
+        ESP_LOGI(TAG, "return false");
         return false;
     }
     if (!cmux_term->init()) {
+        ESP_LOGI(TAG, "return false");
         return false;
     }
     primary_term = std::make_unique<CMuxInstance>(cmux_term, 0);
     if (primary_term == nullptr) {
+        ESP_LOGI(TAG, "return false");
         return false;
     }
     secondary_term = std::make_unique<CMuxInstance>(cmux_term, 1);
+    ESP_LOGI(TAG, "return true");
     return true;
 }
 
@@ -110,11 +118,11 @@ bool DTE::set_mode(modem_mode m)
         if (mode == modem_mode::UNDEF || mode == modem_mode::COMMAND_MODE) {
             if (setup_cmux()) {
                 mode = m;
-                ESP_LOGI("TAG", "gut 1");
+                ESP_LOGI(TAG, "return true");
                 return true;
             }
             mode = modem_mode::UNDEF;
-            ESP_LOGW("TAG", "schlecht 1");
+            ESP_LOGI(TAG, "return false");
             return false;
         }
     }
@@ -126,7 +134,7 @@ bool DTE::set_mode(modem_mode m)
         } else {
             mode = m;
         }
-        ESP_LOGI("TAG", "gut 2");
+        ESP_LOGI(TAG, "return true");
         return true;
     }
     // transitions (DATA|DUAL|CMUX|UNDEF) -> COMMAND
@@ -134,18 +142,18 @@ bool DTE::set_mode(modem_mode m)
         if (mode == modem_mode::CMUX_MODE) {
             if (exit_cmux()) {
                 mode = m;
-                ESP_LOGI("TAG", "gut 3");
+                ESP_LOGI(TAG, "return true");
                 return true;
             }
             mode = modem_mode::UNDEF;
-            ESP_LOGW("TAG", "schlecht 2");
+            ESP_LOGI(TAG, "return false");
             return false;
-        } if (mode == modem_mode::CMUX_MANUAL_MODE || mode == modem_mode::DUAL_MODE) {
-            ESP_LOGI("TAG", "gut 4");
+        } if (mode == modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGI(TAG, "return true");
             return true;
         } else {
             mode = m;
-            ESP_LOGI("TAG", "gut 5");
+            ESP_LOGI(TAG, "return true");
             return true;
         }
     }
@@ -153,32 +161,32 @@ bool DTE::set_mode(modem_mode m)
     if (m == modem_mode::CMUX_MANUAL_MODE) {
         if (setup_cmux()) {
             mode = m;
-            ESP_LOGI("TAG", "gut 6");
+            ESP_LOGI(TAG, "return true");
             return true;
         }
         mode = modem_mode::UNDEF;
-        ESP_LOGW("TAG", "schlecht 3");
+        ESP_LOGI(TAG, "return false");
         return false;
     }
     // manual CMUX transitions: Exit CMUX
     if (m == modem_mode::CMUX_MANUAL_EXIT && mode == modem_mode::CMUX_MANUAL_MODE) {
         if (exit_cmux()) {
             mode = modem_mode::COMMAND_MODE;
-            ESP_LOGI("TAG", "gut 7");
+            ESP_LOGI(TAG, "return true");
             return true;
         }
         mode = modem_mode::UNDEF;
-        ESP_LOGW("TAG", "schlecht 4");
+        ESP_LOGI(TAG, "return false");
         return false;
     }
     // manual CMUX transitions: Swap terminals
     if (m == modem_mode::CMUX_MANUAL_SWAP && mode == modem_mode::CMUX_MANUAL_MODE) {
         secondary_term.swap(primary_term);
-        ESP_LOGI("TAG", "gut 8");
+        ESP_LOGI(TAG, "return true");
         return true;
     }
     mode = modem_mode::UNDEF;
-    ESP_LOGW("TAG", "schlecht 5");
+    ESP_LOGI(TAG, "return false");
     return false;
 }
 

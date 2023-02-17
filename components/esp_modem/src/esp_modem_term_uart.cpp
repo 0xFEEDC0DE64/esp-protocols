@@ -9,6 +9,9 @@
 #include "uart_resource.hpp"
 
 namespace esp_modem {
+namespace {
+constexpr const char TAG[] = "MODEM";
+}
 
 uart_resource::~uart_resource()
 {
@@ -35,9 +38,11 @@ uart_resource::uart_resource(const esp_modem_uart_term_config *config, QueueHand
     ESP_MODEM_THROW_IF_ERROR(uart_param_config(config->port_num, &uart_config), "config uart parameter failed");
 
     if (config->flow_control == ESP_MODEM_FLOW_CONTROL_HW) {
+        ESP_LOGI(TAG, "uart_set_pin() mit rts cts");
         res = uart_set_pin(config->port_num, config->tx_io_num, config->rx_io_num,
                            config->rts_io_num, config->cts_io_num);
     } else {
+        ESP_LOGI(TAG, "uart_set_pin() ohne rts cts");
         res = uart_set_pin(config->port_num, config->tx_io_num, config->rx_io_num,
                            UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
     }
