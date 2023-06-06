@@ -67,26 +67,35 @@ public:
     {
         if (mode == modem_mode::DATA_MODE) {
             if (set_data_mode() != command_result::OK) {
-                return resume_data_mode() == command_result::OK;
+                const auto result = resume_data_mode() == command_result::OK;
+                ESP_LOGI("TAG", "result = %s", result?"true":"false");
+                return result;
             }
+            ESP_LOGI("TAG", "result OK");
             return true;
         } else if (mode == modem_mode::COMMAND_MODE) {
             Task::Delay(1000); // Mandatory 1s pause before
             int retry = 0;
             while (retry++ < 3) {
                 if (set_command_mode() == command_result::OK) {
+                    ESP_LOGI("TAG", "result OK");
                     return true;
                 }
                 Task::Delay(1000); // Mandatory 1s pause after escape
                 if (sync() == command_result::OK) {
+                    ESP_LOGI("TAG", "result OK");
                     return true;
                 }
                 Task::Delay(1000); // Mandatory 1s pause before escape
             }
+            ESP_LOGI("TAG", "result NOT OK");
             return false;
         } else if (mode == modem_mode::CMUX_MODE) {
-            return set_cmux() == command_result::OK;
+            const auto result = set_cmux() == command_result::OK;
+            ESP_LOGI("TAG", "result = %s", result?"true":"false");
+            return result;
         }
+        ESP_LOGI("TAG", "result OK");
         return true;
     }
 

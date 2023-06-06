@@ -134,6 +134,7 @@ void CMux::data_available(uint8_t *data, size_t len)
         sabm_ack = dlci;
     } else if (data == nullptr) {
         int virtual_term = dlci - 1;
+        ESP_LOGI("TAG", "%zd %.*s", total_payload_size, total_payload_size, payload_start);
         if (virtual_term < MAX_TERMINALS_NUM && read_cb[virtual_term]) {
 #ifdef DEFRAGMENT_CMUX_PAYLOAD
             read_cb[virtual_term](payload_start, total_payload_size);

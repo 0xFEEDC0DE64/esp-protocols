@@ -141,6 +141,7 @@ public:
 
     int write(uint8_t *data, size_t len) override
     {
+        ESP_LOGI("TAG", "%zd %.*s", len, len, (const char *)data);
         return cmux->write(instance, data, len);
     }
     void set_read_cb(std::function<bool(uint8_t *data, size_t len)> f) override

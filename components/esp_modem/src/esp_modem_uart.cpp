@@ -124,6 +124,7 @@ void UartTerminal::task()
             switch (event.type) {
             case UART_DATA:
                 uart_get_buffered_data_len(uart.port, &len);
+                ESP_LOGD("TAG", "%zd aber ohne data ptr", len);
                 if (len && on_read) {
                     on_read(nullptr, len);
                 }
@@ -174,13 +175,17 @@ int UartTerminal::read(uint8_t *data, size_t len)
     uart_get_buffered_data_len(uart.port, &length);
     length = std::min(len, length);
     if (length > 0) {
-        return uart_read_bytes(uart.port, data, length, portMAX_DELAY);
+        const auto really_gelesen = uart_read_bytes(uart.port, data, length, portMAX_DELAY);
+        ESP_LOGI("TAG", "%p %zd", data, really_gelesen);
+        ESP_LOGI("TAG", "%zd %.*s", really_gelesen, really_gelesen, data);
+        return really_gelesen;
     }
     return 0;
 }
 
 int UartTerminal::write(uint8_t *data, size_t len)
 {
+    ESP_LOGI("TAG", "%zd %.*s", len, len, (const char *)data);
     return uart_write_bytes_compat(uart.port, data, len);
 }
 

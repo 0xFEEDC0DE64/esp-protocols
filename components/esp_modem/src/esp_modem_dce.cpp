@@ -52,13 +52,17 @@ static bool exit_data(DTE &dte, ModuleIf &device, Netif &netif)
 
 static bool enter_data(DTE &dte, ModuleIf &device, Netif &netif)
 {
+    ESP_LOGI("TAG", "hatschi3");
     if (!device.setup_data_mode()) {
+        ESP_LOGW("TAG", "nix da 3");
         return false;
     }
     if (!device.set_mode(modem_mode::DATA_MODE)) {
+        ESP_LOGW("TAG", "nix da 4");
         return false;
     }
     if (!dte.set_mode(modem_mode::DATA_MODE)) {
+        ESP_LOGW("TAG", "nix da 5");
         return false;
     }
     netif.start();
@@ -119,13 +123,16 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
         mode = m;
         return true;
     case modem_mode::CMUX_MODE:
+        ESP_LOGI("TAG", "switching to CMUX_MODE");
         if (mode == modem_mode::DATA_MODE || mode == modem_mode::CMUX_MODE || mode >= modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGW("TAG", "nix da 1 %i", std::to_underlying(mode));
             return false;
         }
         device->set_mode(modem_mode::CMUX_MODE);    // switch the device into CMUX mode
         usleep(100'000);                            // some devices need a few ms to switch
 
         if (!dte->set_mode(modem_mode::CMUX_MODE)) {
+            ESP_LOGW("TAG", "nix da 2");
             return false;
         }
         mode = modem_mode::CMUX_MODE;

@@ -147,6 +147,7 @@ int FdTerminal::read(uint8_t *data, size_t len)
 
 int FdTerminal::write(uint8_t *data, size_t len)
 {
+    ESP_LOGI("TAG", "%zd %.*s", len, len, (const char *)data);
     int size = ::write(f.fd, data, len);
     if (size < 0) {
         ESP_LOGE(TAG, "Error occurred during read: %d", errno);
