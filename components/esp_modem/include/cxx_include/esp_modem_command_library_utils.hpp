@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include <string_view>
+#include <span>
+
 namespace esp_modem::dce_commands {
 
 /**
@@ -17,9 +20,9 @@ namespace esp_modem::dce_commands {
  * @param timeout_ms Command timeout in ms
  * @return Generic command return type (OK, FAIL, TIMEOUT)
  */
-command_result generic_command(CommandableIf *t, const std::string &command,
-                               const std::string &pass_phrase,
-                               const std::string &fail_phrase, uint32_t timeout_ms);
+command_result generic_command(CommandableIf *t, std::string_view command,
+                               std::string_view pass_phrase,
+                               std::string_view fail_phrase, uint32_t timeout_ms);
 
 /**
  * @brief Utility command to send command and return reply (after DCE says OK)
@@ -29,7 +32,7 @@ command_result generic_command(CommandableIf *t, const std::string &command,
  * @param timeout_ms Command timeout in ms
  * @return Generic command return type (OK, FAIL, TIMEOUT)
  */
-template <typename T> command_result generic_get_string(CommandableIf *t, const std::string &command, T &output, uint32_t timeout_ms = 500);
+template <typename T> command_result generic_get_string(CommandableIf *t, std::string_view command, T &output, uint32_t timeout_ms = 500);
 
 /**
  * @brief Generic command that passes on "OK" and fails on "ERROR"
@@ -38,6 +41,6 @@ template <typename T> command_result generic_get_string(CommandableIf *t, const 
  * @param timeout_ms Command timeout in ms
  * @return Generic command return type (OK, FAIL, TIMEOUT)
  */
-command_result generic_command_common(CommandableIf *t, const std::string &command, uint32_t timeout_ms = 500);
+command_result generic_command_common(CommandableIf *t, std::string_view command, uint32_t timeout_ms = 500);
 
 } // esp_modem::dce_commands
