@@ -496,8 +496,8 @@ command_result SQNGM02S::connect(PdpContext &pdp)
         return res;
     }
     //wait for +CEREG: 5 or +CEREG: 1.
-    const auto pass = std::list<std::string_view>({"+CEREG: 1", "+CEREG: 5"});
-    const auto fail = std::list<std::string_view>({"ERROR"});
+    const std::string_view pass[] {"+CEREG: 1", "+CEREG: 5"};
+    const std::string_view fail[] {"ERROR"};
     res = esp_modem::dce_commands::generic_command(dte.get(), "", pass, fail, 1200000);
     if (res != command_result::OK) {
         config_network_registration_urc(0);

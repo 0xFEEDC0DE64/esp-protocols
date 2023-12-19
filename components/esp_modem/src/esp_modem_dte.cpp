@@ -151,7 +151,7 @@ void DTE::set_command_callbacks()
 
 }
 
-command_result DTE::command(const std::string &command, got_line_cb got_line, uint32_t time_ms, const char separator)
+command_result DTE::command(std::string_view command, got_line_cb got_line, uint32_t time_ms, const char separator)
 {
     Scoped<Lock> l1(internal_lock);
 #ifdef CONFIG_ESP_MODEM_URC_HANDLER
@@ -160,7 +160,7 @@ command_result DTE::command(const std::string &command, got_line_cb got_line, ui
     buffer_state.command_start_offset = buffer_state.total_processed;
 #endif
     command_cb.set(got_line, separator);
-    primary_term->write((uint8_t *)command.c_str(), command.length());
+    primary_term->write((uint8_t *)command.data(), command.length());
     command_cb.wait_for_line(time_ms);
     command_cb.set(nullptr);
 #ifdef CONFIG_ESP_MODEM_URC_HANDLER
@@ -174,7 +174,7 @@ command_result DTE::command(const std::string &command, got_line_cb got_line, ui
     return command_cb.result;
 }
 
-command_result DTE::command(const std::string &cmd, got_line_cb got_line, uint32_t time_ms)
+command_result DTE::command(std::string_view cmd, got_line_cb got_line, uint32_t time_ms)
 {
     return command(cmd, got_line, time_ms, '\n');
 }
