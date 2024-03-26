@@ -122,6 +122,8 @@ public:
      */
     bool recover();
 
+    bool isInBullshitState();
+
 protected:
     /**
      * @brief Allows for locking the DTE

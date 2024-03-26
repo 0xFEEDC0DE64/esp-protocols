@@ -187,6 +187,7 @@ bool CMux::on_recovery(CMuxFrame &frame)
         frame.ptr = recover_ptr;
         state = cmux_state::INIT;
         ESP_LOGI("CMUX", "Protocol recovered");
+        m_isInBullshitState = true;
         if (frame.len > 1 && frame.ptr[1] == SOF_MARKER) {
             // empty frame
             frame.advance();
