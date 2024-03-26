@@ -96,6 +96,8 @@ public:
      */
     bool recover();
 
+    bool isInBullshitState() { if (m_isInBullshitState) { m_isInBullshitState = false; return true; } return false; }
+
 private:
 
     enum class protocol_mismatch_reason {
@@ -127,6 +129,9 @@ private:
     bool on_payload(CMuxFrame &frame);
     bool on_footer(CMuxFrame &frame);
     void recover_protocol(protocol_mismatch_reason reason);
+
+    //! When espressif again fucks up the recovering of the MUX
+    bool m_isInBullshitState{};
 
     std::function<bool(uint8_t *data, size_t len)> read_cb[MAX_TERMINALS_NUM];  /*!< Function pointers to read callbacks */
     std::shared_ptr<Terminal> term;                   /*!< The original terminal */

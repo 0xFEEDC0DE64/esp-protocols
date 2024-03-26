@@ -395,6 +395,13 @@ bool DTE::recover()
     return false;
 }
 
+bool DTE::isInBullshitState()
+{
+    if (!cmux_term)
+        return false;
+    return cmux_term->isInBullshitState();
+}
+
 void DTE::handle_error(terminal_error err)
 {
     if (err == terminal_error::BUFFER_OVERFLOW ||
