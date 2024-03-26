@@ -151,6 +151,8 @@ public:
      */
     void set_command_callbacks();
 
+    bool isInBullshitState();
+
 protected:
     /**
      * @brief Allows for locking the DTE
