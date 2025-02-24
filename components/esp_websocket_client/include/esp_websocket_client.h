@@ -261,6 +261,16 @@ esp_err_t esp_websocket_client_initiate_stop(esp_websocket_client_handle_t clien
 bool esp_websocket_client_is_already_stopped(esp_websocket_client_handle_t client);
 
 /**
+ * @brief      Closes a websocket connection and causes a reconnect to happen
+ *
+ * @param[in]  client      The client
+ * @param[in]  error_type  The error type
+ *
+ * @return     esp_err_t
+ */
+esp_err_t esp_websocket_client_abort_connection(esp_websocket_client_handle_t client, esp_websocket_error_type_t error_type);
+
+/**
  * @brief      Destroy the WebSocket connection and free all resources.
  *             This function must be the last function to call for an session.
  *             It is the opposite of the esp_websocket_client_init function and must be called with the same handle as input that a esp_websocket_client_init call returned.
