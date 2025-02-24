@@ -253,7 +253,7 @@ static esp_err_t esp_websocket_client_dispatch_event(esp_websocket_client_handle
  *       This function does NOT acquire the lock itself. Calling without the lock will result in
  *       race conditions and undefined behavior.
  */
-static esp_err_t esp_websocket_client_abort_connection(esp_websocket_client_handle_t client, esp_websocket_error_type_t error_type)
+esp_err_t esp_websocket_client_abort_connection(esp_websocket_client_handle_t client, esp_websocket_error_type_t error_type)
 {
     ESP_WS_CLIENT_STATE_CHECK(TAG, client, return ESP_FAIL);
 
