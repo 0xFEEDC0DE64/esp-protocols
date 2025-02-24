@@ -241,7 +241,7 @@ static esp_err_t esp_websocket_client_dispatch_event(esp_websocket_client_handle
     return esp_event_loop_run(client->event_handle, 0);
 }
 
-static esp_err_t esp_websocket_client_abort_connection(esp_websocket_client_handle_t client, esp_websocket_error_type_t error_type)
+esp_err_t esp_websocket_client_abort_connection(esp_websocket_client_handle_t client, esp_websocket_error_type_t error_type)
 {
     ESP_WS_CLIENT_STATE_CHECK(TAG, client, return ESP_FAIL);
     esp_transport_close(client->transport);
