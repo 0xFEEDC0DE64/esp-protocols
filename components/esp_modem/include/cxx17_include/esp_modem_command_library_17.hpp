@@ -5,6 +5,7 @@
  */
 #include <string>
 #include <list>
+#include <span>
 #include "esp_log.h"
 #include "cxx_include/esp_modem_dte.hpp"
 #include "cxx_include/esp_modem_dce_module.hpp"
