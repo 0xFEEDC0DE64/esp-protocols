@@ -7,6 +7,7 @@
 #include <charconv>
 #include <span>
 
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include "esp_log.h"
 #include "cxx_include/esp_modem_dte.hpp"
 #include "cxx_include/esp_modem_dce_module.hpp"
@@ -239,7 +240,10 @@ command_result get_battery_status_sim7xxx(CommandableIf *t, int &voltage, int &b
 command_result set_flow_control(CommandableIf *t, int dce_flow, int dte_flow)
 {
     ESP_LOGV(TAG, "%s", __func__);
-    return generic_command_common(t, "AT+IFC=" + std::to_string(dce_flow) + "," + std::to_string(dte_flow) + "\r");
+    auto result = generic_command_common(t, "AT+IFC=" + std::to_string(dce_flow) + "," + std::to_string(dte_flow) + "\r");
+    if (result != command_result::OK)
+        ESP_LOGW("HILFE", "condition error generic_command_common(\"AT+IFC=%i,%i\\r\") != OK", dce_flow, dte_flow);
+    return result;
 }
 
 command_result get_operator_name(CommandableIf *t, std::string &operator_name, int &act)
@@ -298,7 +302,10 @@ command_result set_pdp_context(CommandableIf *t, PdpContext &pdp)
 command_result set_data_mode(CommandableIf *t)
 {
     ESP_LOGV(TAG, "%s", __func__);
-    return generic_command(t, "ATD*99#\r", "CONNECT", "ERROR", 5000);
+    const auto result = generic_command(t, "ATD*99#\r", "CONNECT", "ERROR", 5000);
+    if (result != command_result::OK)
+        ESP_LOGW(TAG, "condition error generic_command(\"ATD*99#\\r\") != OK");
+    return result;
 }
 
 command_result set_data_mode_alt(CommandableIf *t)
@@ -310,7 +317,12 @@ command_result set_data_mode_alt(CommandableIf *t)
 command_result resume_data_mode(CommandableIf *t)
 {
     ESP_LOGV(TAG, "%s", __func__);
-    return generic_command(t, "ATO\r", "CONNECT", "ERROR", 5000);
+    const std::string_view pass[] {"CONNECT"};
+    const std::string_view fail[] {"ERROR", "NO CARRIER"};
+    const auto result = generic_command(t, "ATO\r", pass, fail, 5000);
+    if (result != command_result::OK)
+        ESP_LOGW("HILFE", "condition error generic_command(\"ATO\\r\") != OK");
+    return result;
 }
 
 command_result set_command_mode(CommandableIf *t)

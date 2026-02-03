@@ -122,7 +122,10 @@ command_result GenericModule::send_sms(const std::string &number, const std::str
  */
 command_result GenericModule::resume_data_mode()
 {
-    return esp_modem::dce_commands::resume_data_mode(dte.get());
+    const auto result = esp_modem::dce_commands::resume_data_mode(dte.get());
+    if (result != command_result::OK)
+        ESP_LOGW("HILFE", "condition error esp_modem::dce_commands::resume_data_mode() != OK");
+    return result;
 }
 /**
  * @brief Sets php context
@@ -131,7 +134,10 @@ command_result GenericModule::resume_data_mode()
  */
 command_result GenericModule::set_pdp_context(PdpContext &pdp)
 {
-    return esp_modem::dce_commands::set_pdp_context(dte.get(), pdp);
+    const auto result = esp_modem::dce_commands::set_pdp_context(dte.get(), pdp);
+    if (result != command_result::OK)
+        ESP_LOGW("HILFE", "condition error esp_modem::dce_commands::set_pdp_context() != OK");
+    return result;
 }
 /**
  * @brief Switches to the command mode
@@ -182,7 +188,10 @@ command_result GenericModule::get_module_name(std::string &name)
  */
 command_result GenericModule::set_data_mode()
 {
-    return esp_modem::dce_commands::set_data_mode(dte.get());
+    const auto result = esp_modem::dce_commands::set_data_mode(dte.get());
+    if (result != command_result::OK)
+        ESP_LOGW("HILFE", "condition error esp_modem::dce_commands::set_data_mode() != OK");
+    return result;
 }
 /**
  * @brief Get Signal quality
@@ -202,7 +211,10 @@ command_result GenericModule::get_signal_quality(int &rssi, int &ber)
  */
 command_result GenericModule::set_flow_control(int dce_flow, int dte_flow)
 {
-    return esp_modem::dce_commands::set_flow_control(dte.get(), dce_flow, dte_flow);
+    const auto result = esp_modem::dce_commands::set_flow_control(dte.get(), dce_flow, dte_flow);
+    if (result != command_result::OK)
+        ESP_LOGW("HILFE", "esp_modem::dce_commands::set_flow_control() != OK");
+    return result;
 }
 /**
  * @brief Hangs up current data call

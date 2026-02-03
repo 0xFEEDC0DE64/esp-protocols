@@ -85,7 +85,10 @@ public:
 
     bool set_mode(modem_mode m)
     {
-        return mode.set(dte.get(), device.get(), netif, m);
+        const auto result = mode.set(dte.get(), device.get(), netif, m);
+        if (!result)
+            ESP_LOGW("HILFE", "condition error");
+        return result;
     }
 
     modem_mode get_mode()

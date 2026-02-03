@@ -215,7 +215,10 @@ public:
      */
     command_result set_flow_control(int dce_flow, int dte_flow)
     {
-        return device->set_flow_control(dce_flow, dte_flow);
+        const auto result = device->set_flow_control(dce_flow, dte_flow);
+        if (result != command_result::OK)
+            ESP_LOGW("HILFE", "condition error device->set_flow_control() != OK");
+        return result;
     }
     /**
      * @brief Hangs up current data call

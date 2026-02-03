@@ -66,12 +66,15 @@ static bool exit_data(DTE &dte, ModuleIf &device, Netif &netif)
 static bool enter_data(DTE &dte, ModuleIf &device, Netif &netif)
 {
     if (!device.setup_data_mode()) {
+        ESP_LOGW("HILFE", "condition error !device.setup_data_mode()");
         return false;
     }
     if (!device.set_mode(modem_mode::DATA_MODE)) {
+        ESP_LOGW("HILFE", "condition error !device.set_mode(modem_mode::DATA_MODE)");
         return false;
     }
     if (!dte.set_mode(modem_mode::DATA_MODE)) {
+        ESP_LOGW("HILFE", "condition error !dte.set_mode(modem_mode::DATA_MODE)");
         return false;
     }
     netif.start();
@@ -86,7 +89,10 @@ static bool enter_data(DTE &dte, ModuleIf &device, Netif &netif)
 bool DCE_Mode::set(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m)
 {
     Scoped<DTE> lock(*dte);
-    return set_unsafe(dte, device, netif, m);
+    const auto result = set_unsafe(dte, device, netif, m);
+    if (!result)
+        ESP_LOGW("HILFE", "condition error !set_unsafe()");
+    return result;
 }
 
 /**
@@ -102,6 +108,7 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
     switch (m) {
     case modem_mode::UNDEF:
         if (!dte->set_mode(m)) {
+            ESP_LOGW("HILFE", "condition error !dte->set_mode(m)");
             return false;
         }
         mode = m;
@@ -155,12 +162,14 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
     }
     case modem_mode::COMMAND_MODE:
         if (mode == modem_mode::COMMAND_MODE || mode >= modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGW("HILFE", "condition error mode == modem_mode::COMMAND_MODE || mode >= modem_mode::CMUX_MANUAL_MODE");
             return false;
         }
         if (mode == modem_mode::CMUX_MODE) {
             netif.stop();
             netif.wait_until_ppp_exits();
             if (!dte->set_mode(modem_mode::COMMAND_MODE)) {
+                ESP_LOGW("HILFE", "condition error dte->set_mode(modem_mode::COMMAND_MODE)");
                 return false;
             }
             mode = m;
@@ -168,12 +177,14 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
         }
         if (!transitions::exit_data(*dte, *device, netif)) {
             mode = modem_mode::UNDEF;
+            ESP_LOGW("HILFE", "condition error transitions::exit_data()");
             return false;
         }
         mode = m;
         return true;
     case modem_mode::RESUME_DATA_MODE:
         if (!dte->set_mode(modem_mode::DATA_MODE)) {
+            ESP_LOGW("HILFE", "condition error dte->set_mode(modem_mode::DATA_MODE)");
             return false;
         }
         netif.start();
@@ -181,18 +192,21 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
         return true;
     case modem_mode::RESUME_COMMAND_MODE:
         if (!dte->set_mode(modem_mode::COMMAND_MODE)) {
+            ESP_LOGW("HILFE", "condition error dte->set_mode(modem_mode::COMMAND_MODE)");
             return false;
         }
         mode = modem_mode::COMMAND_MODE;
         return true;
     case modem_mode::RESUME_CMUX_MANUAL_MODE:
         if (!dte->set_mode(modem_mode::CMUX_MANUAL_MODE)) {
+            ESP_LOGW("HILFE", "condition error dte->set_mode(modem_mode::CMUX_MANUAL_MODE)");
             return false;
         }
         mode = modem_mode::CMUX_MANUAL_MODE;
         return true;
     case modem_mode::RESUME_CMUX_MANUAL_DATA:
         if (!dte->set_mode(modem_mode::CMUX_MANUAL_SWAP)) {
+            ESP_LOGW("HILFE", "condition error dte->set_mode(modem_mode::CMUX_MANUAL_SWAP)");
             return false;
         }
         netif.start();
@@ -200,65 +214,83 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
         return true;
     case modem_mode::DATA_MODE:
         if (mode == modem_mode::DATA_MODE || mode == modem_mode::CMUX_MODE || mode >= modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGW("HILFE", "condition error mode == modem_mode::DATA_MODE || mode == modem_mode::CMUX_MODE || mode >= modem_mode::CMUX_MANUAL_MODE");
             return false;
         }
         if (!transitions::enter_data(*dte, *device, netif)) {
+            ESP_LOGW("HILFE", "condition error transitions::enter_data()");
             return false;
         }
         mode = m;
         return true;
     case modem_mode::CMUX_MODE:
         if (mode == modem_mode::DATA_MODE || mode == modem_mode::CMUX_MODE || mode >= modem_mode::CMUX_MANUAL_MODE) {
+            ESP_LOGW("HILFE", "condition error mode == modem_mode::DATA_MODE || mode == modem_mode::CMUX_MODE || mode >= modem_mode::CMUX_MANUAL_MODE %i", mode);
             return false;
         }
         device->set_mode(modem_mode::CMUX_MODE);    // switch the device into CMUX mode
         usleep(100'000);                            // some devices need a few ms to switch
 
         if (!dte->set_mode(modem_mode::CMUX_MODE)) {
+            ESP_LOGW("HILFE", "condition error dte->set_mode(modem_mode::CMUX_MODE)");
             return false;
         }
         mode = modem_mode::CMUX_MODE;
-        return transitions::enter_data(*dte, *device, netif);
+        {
+        const auto result = transitions::enter_data(*dte, *device, netif);
+        if (!result)
+            ESP_LOGW("HILFE", "condition error transitions::enter_data()");
+        return result;
+        }
     case modem_mode::CMUX_MANUAL_MODE:
         if (mode != modem_mode::COMMAND_MODE && mode != modem_mode::UNDEF) {
+            ESP_LOGW("HILFE", "condition error mode != modem_mode::COMMAND_MODE && mode != modem_mode::UNDEF %i", mode);
             return false;
         }
         device->set_mode(modem_mode::CMUX_MODE);
         usleep(100'000);
 
         if (!dte->set_mode(m)) {
+            ESP_LOGW("HILFE", "condition error dte->set_mode()");
             return false;
         }
         mode = modem_mode::CMUX_MANUAL_MODE;
         return true;
     case modem_mode::CMUX_MANUAL_EXIT:
         if (mode != modem_mode::CMUX_MANUAL_MODE && mode != modem_mode::UNDEF) {
+            ESP_LOGW("HILFE", "condition error mode != modem_mode::CMUX_MANUAL_MODE && mode != modem_mode::UNDEF %i", mode);
             return false;
         }
         if (!dte->set_mode(m)) {
+            ESP_LOGW("HILFE", "condition error dte->set_mode()");
             return false;
         }
         mode = modem_mode::COMMAND_MODE;
         return true;
     case modem_mode::CMUX_MANUAL_SWAP:
         if (mode != modem_mode::CMUX_MANUAL_MODE && mode != modem_mode::UNDEF) {
+            ESP_LOGW("HILFE", "condition error mode != modem_mode::CMUX_MANUAL_MODE && mode != modem_mode::UNDEF %i", mode);
             return false;
         }
         if (!dte->set_mode(m)) {
+            ESP_LOGW("HILFE", "condition error dte->set_mode()");
             return false;
         }
         return true;
     case modem_mode::CMUX_MANUAL_DATA:
         if (mode != modem_mode::CMUX_MANUAL_MODE && mode != modem_mode::UNDEF) {
+            ESP_LOGW("HILFE", "condition error mode != modem_mode::CMUX_MANUAL_MODE && mode != modem_mode::UNDEF %i", mode);
             return false;
         }
         return transitions::enter_data(*dte, *device, netif);
     case modem_mode::CMUX_MANUAL_COMMAND:
         if (mode != modem_mode::CMUX_MANUAL_MODE && mode != modem_mode::UNDEF) {
+            ESP_LOGW("HILFE", "condition error mode != modem_mode::CMUX_MANUAL_MODE && mode != modem_mode::UNDEF", mode);
             return false;
         }
         return transitions::exit_data(*dte, *device, netif);
     }
+    ESP_LOGW("HILFE", "condition error FALLBACK");
     return false;
 }
 

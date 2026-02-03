@@ -452,6 +452,7 @@ bool CMux::init()
                 break;
             }
             if (timeout++ > 100) {
+                ESP_LOGW("HILFE", "condition error timeout++ > 100");
                 return false;
             }
         }

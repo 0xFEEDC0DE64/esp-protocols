@@ -199,10 +199,12 @@ bool DTE::setup_cmux()
     }
     cmux_term = std::make_shared<CMux>(primary_term, std::move(buffer));
     if (cmux_term == nullptr) {
+        ESP_LOGW("HILFE", "condition error cmux_term!=nullptr");
         return false;
     }
 
     if (!cmux_term->init()) {
+        ESP_LOGW("HILFE", "condition error !cmux_term->init()");
         exit_cmux_internal();
         cmux_term = nullptr;
         return false;
@@ -211,6 +213,7 @@ bool DTE::setup_cmux()
     primary_term   = std::make_unique<CMuxInstance>(cmux_term, 0);
     secondary_term = std::make_unique<CMuxInstance>(cmux_term, 1);
     if (primary_term == nullptr || secondary_term == nullptr) {
+        ESP_LOGW("HILFE", "condition error primary_term == nullptr || secondary_term == nullptr");
         exit_cmux_internal();
         cmux_term = nullptr;
         return false;
@@ -234,6 +237,7 @@ bool DTE::set_mode(modem_mode m)
                 return true;
             }
             mode = modem_mode::UNDEF;
+            ESP_LOGW("HILFE", "condition error !setup_cmux()");
             return false;
         }
     }
@@ -256,6 +260,7 @@ bool DTE::set_mode(modem_mode m)
                 return true;
             }
             mode = modem_mode::UNDEF;
+            ESP_LOGW("HILFE", "condition error !exit_cmux()");
             return false;
         } if (mode == modem_mode::CMUX_MANUAL_MODE || mode == modem_mode::DUAL_MODE) {
             return true;
@@ -271,6 +276,7 @@ bool DTE::set_mode(modem_mode m)
             return true;
         }
         mode = modem_mode::UNDEF;
+        ESP_LOGW("HILFE", "condition error !setup_cmux()");
         return false;
     }
     // manual CMUX transitions: Exit CMUX
@@ -280,6 +286,7 @@ bool DTE::set_mode(modem_mode m)
             return true;
         }
         mode = modem_mode::UNDEF;
+        ESP_LOGW("HILFE", "condition error !exit_cmux()");
         return false;
     }
     // manual CMUX transitions: Swap terminals
@@ -289,6 +296,7 @@ bool DTE::set_mode(modem_mode m)
         return true;
     }
     mode = modem_mode::UNDEF;
+    ESP_LOGW("HILFE", "condition error !(m == modem_mode::CMUX_MANUAL_SWAP && (mode == modem_mode::CMUX_MANUAL_MODE || mode == modem_mode::UNDEF) %i", mode);
     return false;
 }
 

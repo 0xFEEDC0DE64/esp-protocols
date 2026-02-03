@@ -47,9 +47,11 @@ public:
     bool setup_data_mode() override
     {
         if (set_echo(false) != command_result::OK) {
+            ESP_LOGW("HILFE", "condition %i", __LINE__);
             return false;
         }
         if (set_pdp_context(*pdp) != command_result::OK) {
+            ESP_LOGW("HILFE", "condition %i", __LINE__);
             return false;
         }
         return true;
@@ -62,7 +64,10 @@ public:
     {
         if (mode == modem_mode::DATA_MODE) {
             if (set_data_mode() != command_result::OK) {
-                return resume_data_mode() == command_result::OK;
+                const auto result = resume_data_mode() == command_result::OK;
+                if (!result)
+                    ESP_LOGW("HILFE", "condition error");
+                return result;
             }
             return true;
         } else if (mode == modem_mode::COMMAND_MODE) {
@@ -80,6 +85,7 @@ public:
                 }
                 Task::Delay(1000); // Mandatory 1s pause before escape
             }
+            ESP_LOGW("HILFE", "condition %i", __LINE__);
             return false;
         } else if (mode == modem_mode::CMUX_MODE) {
             return set_cmux() == command_result::OK;
