@@ -78,6 +78,12 @@ public:
     void set_read_cb(int inst, std::function<bool(uint8_t *data, size_t len)> f);
 
     /**
+     * @brief Sets unexpected CMux exit callback
+     * @param f function pointer
+     */
+    void set_unexpected_exit_cb(std::function<bool(uint8_t *data, size_t len)> f);
+
+    /**
      * @brief Writes to the appropriate terminal
      * @param i Index of the terminal
      * @param data Data to write
@@ -137,6 +143,7 @@ private:
     void recover_protocol(protocol_mismatch_reason reason);
 
     std::function<bool(uint8_t *data, size_t len)> read_cb[MAX_TERMINALS_NUM];  /*!< Function pointers to read callbacks */
+    std::function<bool(uint8_t *data, size_t len)> unexpected_exit_cb; /*!< unexpected exit callback */
     std::shared_ptr<Terminal> term;                   /*!< The original terminal */
     cmux_state state;                                 /*!< CMux protocol state */
 

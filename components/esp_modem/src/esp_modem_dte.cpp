@@ -244,6 +244,20 @@ bool DTE::setup_cmux()
         return false;
     }
 
+    cmux_term->set_unexpected_exit_cb([this](uint8_t *data, size_t len) {
+        if (detect_cmux_exit_cb == nullptr || !detect_cmux_exit_cb(data, len))
+            return false;
+
+        // process remaining line
+        if (on_data != nullptr) this->command_cb.process_line(data, 0, len, this);
+
+        // disable CMUX mode without sending any more CMUX packets
+        exit_cmux_internal();
+        mode = modem_mode::COMMAND_MODE;
+
+        return true;
+    });
+
     primary_term   = std::make_unique<CMuxInstance>(cmux_term, 0);
     secondary_term = std::make_unique<CMuxInstance>(cmux_term, 1);
     if (primary_term == nullptr || secondary_term == nullptr) {
@@ -345,6 +359,11 @@ void DTE::set_read_cb(std::function<bool(uint8_t *, size_t)> f)
         }
         return false;
     });
+}
+
+void DTE::set_detect_unexpected_cmux_exit_cb(std::function<bool(uint8_t *, size_t)> f)
+{
+    detect_cmux_exit_cb = std::move(f);
 }
 
 void DTE::set_error_cb(std::function<void(terminal_error err)> f)
