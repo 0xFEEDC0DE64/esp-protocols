@@ -55,6 +55,7 @@ public:
 
         dte->set_read_cb(nullptr);
         dte->set_error_cb(nullptr);
+        dte->set_detect_unexpected_cmux_exit_cb(nullptr);
     }
 
     /**
