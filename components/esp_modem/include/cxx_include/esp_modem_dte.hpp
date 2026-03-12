@@ -92,6 +92,12 @@ public:
     void set_read_cb(std::function<bool(uint8_t *data, size_t len)> f);
 
     /**
+     * @brief Sets unexpected cmux exit callback
+     * @param f Function to be called to detect unexpected cmux exit
+     */
+    void set_detect_unexpected_cmux_exit_cb(std::function<bool(uint8_t *data, size_t len)> f);
+
+    /**
      * @brief Sets read callback for manual command processing
      * Note that this API also locks the command API, which can only be used
      * after you remove the callback by dte->on_read(nullptr)
@@ -244,6 +250,7 @@ private:
     modem_mode mode;                                        /*!< DTE operation mode */
     std::function<bool(uint8_t *data, size_t len)> on_data; /*!< on data callback for current terminal */
     std::function<void(terminal_error err)> user_error_cb;  /*!< user callback on error event from attached terminals */
+    std::function<bool(uint8_t *data, size_t len)> detect_cmux_exit_cb; /*!< cmux exit detection callback */
 
 #ifdef CONFIG_ESP_MODEM_USE_INFLATABLE_BUFFER_IF_NEEDED
     /**
