@@ -180,6 +180,8 @@ bool CMux::on_init(CMuxFrame &frame)
 {
     if (frame.ptr[0] != SOF_MARKER) {
         recover_protocol(protocol_mismatch_reason::MISSED_LEAD_SOF);
+        if (unexpected_exit_cb) unexpected_exit_cb(frame.ptr, frame.len);
+
         return true;
     }
     if (frame.len > 1 && frame.ptr[1] == SOF_MARKER) {
@@ -515,6 +517,11 @@ void CMux::set_read_cb(int inst, std::function<bool(uint8_t *, size_t)> f)
     if (inst < MAX_TERMINALS_NUM) {
         read_cb[inst] = std::move(f);
     }
+}
+
+void CMux::set_unexpected_exit_cb(std::function<bool(uint8_t *, size_t)> f)
+{
+    unexpected_exit_cb = std::move(f);
 }
 
 std::pair<std::shared_ptr<Terminal>, unique_buffer> CMux::detach()
