@@ -470,6 +470,12 @@ bool DTE::isInBullshitState()
     return cmux_term->isInBullshitState();
 }
 
+void DTE::setInBullshitState(bool state) {
+    if (!cmux_term)
+        return;
+    cmux_term->setInBullshitState(state);
+}
+
 void DTE::handle_error(terminal_error err)
 {
     if (err == terminal_error::BUFFER_OVERFLOW ||

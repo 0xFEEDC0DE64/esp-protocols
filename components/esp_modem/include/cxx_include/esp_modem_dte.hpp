@@ -194,6 +194,7 @@ public:
     void set_command_callbacks();
 
     bool isInBullshitState();
+    void setInBullshitState(bool state);
 
 protected:
     /**

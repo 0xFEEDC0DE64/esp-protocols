@@ -103,6 +103,7 @@ public:
     bool recover();
 
     bool isInBullshitState() { if (m_isInBullshitState) { m_isInBullshitState = false; return true; } return false; }
+    void setInBullshitState(bool state) { m_isInBullshitState = state; }
 
 private:
 
