@@ -3,7 +3,6 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/semphr.h"
@@ -14,6 +13,7 @@
 #include "exception_stub.hpp"
 #include "cxx_include/esp_modem_dte.hpp"
 #include "uart_resource.hpp"
+#include "esp_private/log_buffer_escaped.h"
 
 static const char *TAG = "uart_terminal";
 
@@ -185,7 +185,11 @@ int UartTerminal::read(uint8_t *data, size_t len)
 #if CONFIG_ESP_MODEM_ADD_DEBUG_LOGS
         ESP_LOG_BUFFER_HEXDUMP("uart-rx", data, read_len, ESP_LOG_DEBUG);
 #endif
+        ESP_LOG_LEVEL(ESP_LOG_DEBUG, "modem-ext-log", "UartTerminal::read(%zd):", read_len);
+        esp_modem::log_buffer_escaped(ESP_LOG_DEBUG, "modem-ext-log", "uart-rx: ", data, read_len);
         return read_len;
+    } else {
+        ESP_LOG_LEVEL(ESP_LOG_DEBUG, "modem-ext-log", "UartTerminal::read(%zd):", 0);
     }
     return 0;
 }
@@ -195,6 +199,8 @@ int UartTerminal::write(uint8_t *data, size_t len)
 #if CONFIG_ESP_MODEM_ADD_DEBUG_LOGS
     ESP_LOG_BUFFER_HEXDUMP("uart-tx", data, len, ESP_LOG_DEBUG);
 #endif
+    ESP_LOG_LEVEL(ESP_LOG_DEBUG, "modem-ext-log", "UartTerminal::write(%zd):", len);
+    esp_modem::log_buffer_escaped(ESP_LOG_DEBUG, "modem-ext-log", "uart-tx: ", data, len);
     return uart_write_bytes_compat(uart.port, data, len);
 }
 
