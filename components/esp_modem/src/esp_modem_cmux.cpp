@@ -10,6 +10,7 @@
 #include "cxx_include/esp_modem_dte.hpp"
 #include "esp_log.h"
 #include "sdkconfig.h"
+#include "esp_private/log_buffer_escaped.h"
 
 using namespace esp_modem;
 
@@ -123,6 +124,8 @@ bool CMux::data_available(uint8_t *data, size_t len)
 {
     if (data && (type & FT_UIH) == FT_UIH && len > 0 && dlci > 0) { // valid payload on a virtual term
         int virtual_term = dlci - 1;
+        ESP_LOG_LEVEL(ESP_LOG_DEBUG, "modem-ext-log", "CMux::read(%d, %zd):", virtual_term, len);
+        esp_modem::log_buffer_escaped(ESP_LOG_DEBUG, "modem-ext-log", "cmux-rx: ", data, len);
         if (virtual_term < MAX_TERMINALS_NUM) {
             if (read_cb[virtual_term] == nullptr) {
                 // ignore all virtual terminal's data before we completely establish CMUX
@@ -465,6 +468,8 @@ bool CMux::init()
 
 int CMux::write(int virtual_term, uint8_t *data, size_t len)
 {
+    ESP_LOG_LEVEL(ESP_LOG_DEBUG, "modem-ext-log", "CMux::write(%d, %zd):", virtual_term, len);
+    esp_modem::log_buffer_escaped(ESP_LOG_DEBUG, "modem-ext-log", "cmux-tx: ", data, len);
     const size_t cmux_max_len = 127;
     Scoped<Lock> l(lock);
     int i = virtual_term + 1;
