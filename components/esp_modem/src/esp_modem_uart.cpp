@@ -31,6 +31,7 @@ struct uart_task {
     ~uart_task()
     {
         if (task_handle) {
+            ESP_LOGE(TAG, "task did not get stopped in time! deleting task unsynchronized!");
             vTaskDelete(task_handle);
         }
     }
@@ -46,7 +47,9 @@ public:
         event_queue(), uart(&config->uart_config, &event_queue, -1), signal(),
         task_handle(config->task_stack_size, config->task_priority, this, s_task) {}
 
-    ~UartTerminal() override = default;
+    ~UartTerminal() override {
+        stop();
+    }
 
     void start() override
     {
@@ -55,7 +58,10 @@ public:
 
     void stop() override
     {
-        signal.set(TASK_STOP);
+        if (task_handle.task_handle != nullptr) {
+            signal.set(TASK_STOP);
+            signal.wait_any(TASK_DEINIT, portMAX_DELAY);
+        }
     }
 
     int write(uint8_t *data, size_t len) override;
@@ -71,8 +77,10 @@ private:
     static void s_task(void *task_param)
     {
         auto t = static_cast<UartTerminal *>(task_param);
+        t->signal.wait_any(TASK_START | TASK_STOP, portMAX_DELAY);
         t->task();
         t->task_handle.task_handle = nullptr;
+        t->signal.set(TASK_DEINIT);
         vTaskDelete(nullptr);
     }
 
@@ -88,7 +96,7 @@ private:
         xQueueReset(event_queue);
     }
 
-    static const size_t TASK_INIT = BIT0;
+    static const size_t TASK_DEINIT = BIT0;
     static const size_t TASK_START = BIT1;
     static const size_t TASK_STOP = BIT2;
 
@@ -111,12 +119,7 @@ void UartTerminal::task()
 {
     uart_event_t event;
     size_t len;
-    signal.set(TASK_INIT);
-    signal.wait_any(TASK_START | TASK_STOP, portMAX_DELAY);
-    if (signal.is_any(TASK_STOP)) {
-        return; // exits to the static method where the task gets deleted
-    }
-    while (signal.is_any(TASK_START)) {
+    while (!signal.is_any(TASK_STOP)) {
         if (get_event(event, 100)) {
             switch (event.type) {
             case UART_DATA:
