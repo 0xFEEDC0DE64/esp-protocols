@@ -60,6 +60,18 @@ DTE::DTE(std::unique_ptr<Terminal> t, std::unique_ptr<Terminal> s)
     set_command_callbacks();
 }
 
+DTE::~DTE() noexcept {
+    // clear callbacks to avoid getting calls into partially destructed objects
+    clear_command_callbacks();
+}
+
+void DTE::clear_command_callbacks()
+{
+    primary_term->set_read_cb(nullptr);
+    primary_term->set_error_cb(nullptr);
+    secondary_term->set_read_cb(nullptr);
+    secondary_term->set_error_cb(nullptr);
+}
 
 void DTE::set_command_callbacks()
 {

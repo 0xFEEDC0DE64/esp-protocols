@@ -53,7 +53,7 @@ public:
     explicit DTE(const esp_modem_dte_config *config, std::unique_ptr<Terminal> t, std::unique_ptr<Terminal> s);
     explicit DTE(std::unique_ptr<Terminal> t, std::unique_ptr<Terminal> s);
 
-    ~DTE() = default;
+    ~DTE() noexcept;
 
     /**
      * @brief Writing to the underlying terminal
@@ -207,6 +207,8 @@ protected:
     }
     friend class Scoped<DTE>;                               /*!< Declaring "Scoped<DTE> lock(dte)" locks this instance */
 private:
+
+    void clear_command_callbacks();
 
     void handle_error(terminal_error err);                  /*!< Performs internal error handling */
     [[nodiscard]] bool setup_cmux();                        /*!< Internal setup of CMUX mode */
