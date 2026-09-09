@@ -49,12 +49,14 @@ public:
     { }
 
     ~DCE_T() {
+        ESP_LOGW("modem-ext-log", "stopping DCE");
         netif.stop();
         netif.wait_until_ppp_exits();
 
         dte->set_read_cb(nullptr);
         dte->set_error_cb(nullptr);
         dte->set_detect_unexpected_cmux_exit_cb(nullptr);
+        ESP_LOGW("modem-ext-log", "destructing DCE");
     }
 
     /**

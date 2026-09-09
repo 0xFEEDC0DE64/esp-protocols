@@ -63,6 +63,7 @@ DTE::DTE(std::unique_ptr<Terminal> t, std::unique_ptr<Terminal> s)
 
 DTE::~DTE()
 {
+    ESP_LOGW("modem-ext-log", "stopping DTE");
     // The terminals' RX tasks invoke read/error callbacks that capture this DTE (and reference
     // command_cb.line_lock). Members are destroyed after this body runs, and command_cb is
     // destroyed first of all (declared last), so we must guarantee no callback can fire into a
@@ -81,6 +82,7 @@ DTE::~DTE()
         secondary_term->set_read_cb(nullptr);
         secondary_term->set_error_cb(nullptr);
     }
+    ESP_LOGW("modem-ext-log", "destructing DTE");
 }
 
 void DTE::set_command_callbacks()
