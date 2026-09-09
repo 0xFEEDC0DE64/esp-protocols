@@ -48,7 +48,13 @@ public:
         dte(dte), device(std::move(dev)), netif(dte, netif)
     { }
 
-    ~DCE_T() = default;
+    ~DCE_T() {
+        netif.stop();
+        netif.wait_until_ppp_exits();
+
+        dte->set_read_cb(nullptr);
+        dte->set_error_cb(nullptr);
+    }
 
     /**
      * @brief Set data mode!
