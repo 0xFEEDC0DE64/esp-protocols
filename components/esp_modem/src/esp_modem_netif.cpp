@@ -31,6 +31,7 @@ esp_err_t Netif::esp_modem_dte_transmit(void *h, void *buffer, size_t len)
 {
     auto *ppp = static_cast<Netif *>(h);
     if (ppp->signal.is_any(PPP_STARTED)) {
+        ESP_LOG_LEVEL(ESP_LOG_DEBUG, "modem-ext-log", "Netif::write(%zd)", len);
         if (ppp->ppp_dte && ppp->ppp_dte->write((uint8_t *) buffer, len) > 0) {
             return ESP_OK;
         }
@@ -66,6 +67,7 @@ esp_err_t Netif::esp_modem_post_attach(esp_netif_t *esp_netif, void *args)
 
 void Netif::receive(uint8_t *data, size_t len)
 {
+    ESP_LOG_LEVEL(ESP_LOG_DEBUG, "modem-ext-log", "Netif::read(%zd)", len);
     esp_netif_receive(driver.base.netif, data, len, nullptr);
 }
 
@@ -100,6 +102,7 @@ void Netif::start()
 
 void Netif::stop()
 {
+    ESP_LOGW("modem-ext-log", "stopping Netif");
     esp_netif_action_stop(driver.base.netif, nullptr, 0, nullptr);
     signal.clear(PPP_STARTED);
 }
@@ -122,6 +125,7 @@ Netif::~Netif()
 {
     ppp_dte->set_read_cb(nullptr);
     if (signal.is_any(PPP_STARTED)) {
+        ESP_LOGW("modem-ext-log", "stopping Netif");
         esp_netif_action_stop(driver.base.netif, nullptr, 0, nullptr);
         signal.clear(PPP_STARTED);
         signal.wait(PPP_EXIT, 30000);
@@ -131,6 +135,7 @@ Netif::~Netif()
 #endif
     esp_event_handler_unregister(IP_EVENT, IP_EVENT_PPP_GOT_IP, esp_netif_action_connected);
     esp_event_handler_unregister(IP_EVENT, IP_EVENT_PPP_LOST_IP, esp_netif_action_disconnected);
+    ESP_LOGW("modem-ext-log", "destructing Netif");
 }
 
 void Netif::wait_until_ppp_exits()
