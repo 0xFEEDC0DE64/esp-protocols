@@ -32,9 +32,11 @@ public:
 
     ~UartTerminal() override
     {
+        ESP_LOGW("modem-ext-log", "stopping Uart");
         // Stop the RX task gracefully (and synchronously) before our members are torn down,
         // so it is never force-deleted while inside a callback or blocked in the UART driver.
         UartTerminal::stop();
+        ESP_LOGW("modem-ext-log", "destructing Uart");
     }
 
     void start() override
