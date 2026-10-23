@@ -5,6 +5,8 @@
  */
 
 #pragma once
+#include <cxx_include/esp_modem_dce_module.hpp>
+#include <cxx_include/esp_modem_dce_template.hpp>
 
 namespace esp_modem {
 /**
