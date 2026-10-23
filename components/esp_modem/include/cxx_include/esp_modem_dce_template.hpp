@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#pragma once
 #include <utility>
 #include "cxx_include/esp_modem_netif.hpp"
 #include "cxx_include/esp_modem_dce_module.hpp"
