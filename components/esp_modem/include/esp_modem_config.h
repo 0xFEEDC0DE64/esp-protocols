@@ -29,7 +29,8 @@ extern "C" {
 typedef enum {
     ESP_MODEM_FLOW_CONTROL_NONE = 0,
     ESP_MODEM_FLOW_CONTROL_SW,
-    ESP_MODEM_FLOW_CONTROL_HW
+    ESP_MODEM_FLOW_CONTROL_HW,
+    ESP_MODEM_FLOW_CONTROL_HW_RTS_ONLY,
 } esp_modem_flow_ctrl_t;
 
 /**

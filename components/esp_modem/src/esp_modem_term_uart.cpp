@@ -33,13 +33,18 @@ uart_resource::uart_resource(const esp_modem_uart_term_config *config, QueueHand
     uart_config.data_bits = config->data_bits;
     uart_config.parity = config->parity;
     uart_config.stop_bits = config->stop_bits;
-    uart_config.flow_ctrl = (config->flow_control == ESP_MODEM_FLOW_CONTROL_HW) ? UART_HW_FLOWCTRL_CTS_RTS
-                            : UART_HW_FLOWCTRL_DISABLE;
+    uart_config.flow_ctrl = (config->flow_control == ESP_MODEM_FLOW_CONTROL_HW) ? UART_HW_FLOWCTRL_CTS_RTS :
+                            (config->flow_control == ESP_MODEM_FLOW_CONTROL_HW_RTS_ONLY) ? UART_HW_FLOWCTRL_RTS :
+                            UART_HW_FLOWCTRL_DISABLE;
     uart_config.source_clk = config->source_clk;
 
     ESP_MODEM_THROW_IF_ERROR(uart_param_config(config->port_num, &uart_config), "config uart parameter failed");
 
     if (config->flow_control == ESP_MODEM_FLOW_CONTROL_HW) {
+        res = uart_set_pin(config->port_num, config->tx_io_num, config->rx_io_num,
+                           config->rts_io_num, config->cts_io_num);
+    } else if (config->flow_control == ESP_MODEM_FLOW_CONTROL_HW_RTS_ONLY) {
+        // NOTE: still set both pins to allow turning on CTS later
         res = uart_set_pin(config->port_num, config->tx_io_num, config->rx_io_num,
                            config->rts_io_num, config->cts_io_num);
     } else {
@@ -50,6 +55,8 @@ uart_resource::uart_resource(const esp_modem_uart_term_config *config, QueueHand
     /* Set flow control threshold */
     if (config->flow_control == ESP_MODEM_FLOW_CONTROL_HW) {
         res = uart_set_hw_flow_ctrl(config->port_num, UART_HW_FLOWCTRL_CTS_RTS, UART_HW_FIFO_LEN(config->port_num) - 8);
+    } else if (config->flow_control == ESP_MODEM_FLOW_CONTROL_HW_RTS_ONLY) {
+        res = uart_set_hw_flow_ctrl(config->port_num, UART_HW_FLOWCTRL_RTS, UART_HW_FIFO_LEN(config->port_num) - 8);
     } else if (config->flow_control == ESP_MODEM_FLOW_CONTROL_SW) {
         res = uart_set_sw_flow_ctrl(config->port_num, true, 8, UART_HW_FIFO_LEN(config->port_num) - 8);
     }
